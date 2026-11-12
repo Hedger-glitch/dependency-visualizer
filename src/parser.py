@@ -12,12 +12,14 @@ ARG_SCHEMA = {
     "-r": {
         "name": "repo",
         "type": str,
-        "required": True
+        "required": False,
+        "default": ""
     },
     "--repo": {
         "name": "repo",
         "type": str,
-        "required": True
+        "required": False,
+        "default": ""
     },
     "-m": {
         "name": "mode",
@@ -137,5 +139,9 @@ def parse_args(argv: list[str]):
             i += 2
 
     _check_required(config)
+
+    if config["mode"] == "local" and not config["repo"]:
+        raise ValueError("Для режима 'local' обязателен параметр --repo (-r)")
+    
     return config
     

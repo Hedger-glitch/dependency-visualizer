@@ -73,6 +73,18 @@ ARG_SCHEMA = {
         "required": False,
         "default": False
     },
+    "-o": {
+        "name": "order",
+        "type": bool,
+        "required": False,
+        "default": False
+    },
+    "--order": {
+        "name": "order",
+        "type": bool,
+        "required": False,
+        "default": False
+    }
 }
 
 def _validate_value(arg, rule, value_str):
@@ -141,7 +153,7 @@ def parse_args(argv: list[str]):
     _check_required(config)
 
     if config["mode"] == "local" and not config["repo"]:
-        raise ValueError("Для режима 'local' обязателен параметр --repo (-r)")
+        raise ValueError("Для режима 'local' обязателен параметр --repo")
     
     return config
     

@@ -1,6 +1,6 @@
 import sys
 from src.parser import parse_args
-from src.graph import build_graph, load_test_graph
+from src.graph import build_graph, load_test_graph, get_install_order
 
 def _print_graph(graph):
     """Выводит граф в консоль"""
@@ -21,6 +21,7 @@ def _process_dependencies(config):
     mode = config["mode"]
     package = config["package"]
     depth = config["depth"]
+    show_order = config.get("order", False)
 
     test_data = {}
 
@@ -32,6 +33,12 @@ def _process_dependencies(config):
             return False
         graph = build_graph(package, depth, mode, config, test_data)
         _print_graph(graph)
+
+        if show_order:
+            print("\nПорядок загрузки (от листьев к корню):")
+            order = get_install_order(graph, package)
+            print(" " + " -> ".join(order))
+
         return True
     except Exception as e:
         print(f'Ошибка: {e}')

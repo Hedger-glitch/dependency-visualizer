@@ -1,42 +1,42 @@
 import sys
 from src.parser import parse_args
-from src.fetcher import parse_requirements_file, fetch_online_dependencies
+from src.graph import build_graph, load_test_graph
 
-def _print_dependencies(package, deps):
-    """Выводит список зависимостей на экран"""
-    print(f'Прямые зависимости для "{package}":')
-    if not deps:
-        print("  (зависимости не найдены)")
+def _print_graph(graph):
+    """Выводит граф в консоль"""
+    print("\nГраф зависимостей:")
+
+    if not graph:
+        print("  (граф пуст)")
         return
-
-    if isinstance(deps, dict):
-        for name, version in deps.items():
-            print(f'  - {name} {version}')
-
-    else:
-        for name in sorted(deps):
-            print(f'  - {name}')
+    for node, deps in graph.items():
+        if deps:
+            deps_str = ", ".join(deps)
+        else:
+            deps_str = "(нет)"
+        print(f'  {node} -> {deps_str}')
 
 def _process_dependencies(config):
-    """Определяет режим и получает зависимости"""
-    try:
-        if config["mode"] == "local":
-            deps = parse_requirements_file(config["repo"])
-        elif config["mode"] == "online":
-            deps = fetch_online_dependencies(
-                config["package"], 
-                config["version"]
-            )
-        else:
-            print(f'Режим "{config["mode"]}" пока не реализован')
-            return False
+    """Определяет режим и строит граф"""
+    mode = config["mode"]
+    package = config["package"]
+    depth = config["depth"]
 
-        _print_dependencies(config["package"], deps)
+    test_data = {}
+
+    try:
+        if mode == "test":
+            test_data = load_test_graph(config["repo"])
+        elif mode not in ("local", "online"):
+            print(f'Режим "{mode}" пока не реализован')
+            return False
+        graph = build_graph(package, depth, mode, config, test_data)
+        _print_graph(graph)
         return True
     except Exception as e:
         print(f'Ошибка: {e}')
         return False
-
+                
 
 def main(argv):
     """Точка входа программы"""

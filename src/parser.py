@@ -84,6 +84,18 @@ ARG_SCHEMA = {
         "type": bool,
         "required": False,
         "default": False
+    },
+    "-g": {
+        "name": "graphviz",
+        "type": bool,
+        "required": False,
+        "default": False
+    },
+    "--graphviz": {
+        "name": "graphviz",
+        "type": bool,
+        "required": False,
+        "default": False
     }
 }
 

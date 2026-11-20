@@ -1,6 +1,8 @@
 import sys
 from src.parser import parse_args
 from src.graph import build_graph, load_test_graph, get_install_order
+from src.graph import generate_graphviz, print_ascii_tree
+import os
 
 def _print_graph(graph):
     """Выводит граф в консоль"""
@@ -16,28 +18,54 @@ def _print_graph(graph):
             deps_str = "(нет)"
         print(f'  {node} -> {deps_str}')
 
-def _process_dependencies(config):
-    """Определяет режим и строит граф"""
+def _build_graph_from_config(config):
+    """Строит граф зависимостей от выбранного режима"""
     mode = config["mode"]
-    package = config["package"]
-    depth = config["depth"]
-    show_order = config.get("order", False)
-
     test_data = {}
 
+    if mode == "test":
+        test_data = load_test_graph(config["repo"])
+    elif mode not in ("local", "online"):
+        raise ValueError(f'Режим "{mode}" не реализован')
+
+    return build_graph(
+        config["package"],
+        config["depth"], 
+        mode, 
+        config, 
+        test_data
+    )
+
+def _visualize_graph(config, graph):
+    """Выполняет визуализацию графа (ASCII и Graphviz)"""
+    if config.get("ascii"):
+        print("\nASCII-дерево:")
+        print_ascii_tree(graph, config["package"])
+    if config.get("graphviz"):
+        dot_code = generate_graphviz(graph)
+        filename = f'{config["package"]}_graph.dot'
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(dot_code)
+        print(f'\n[Graphviz] Граф сохранен в файл {filename}')
+
+def _print_load_order(config, graph):
+    """Считает и выводит порядок зависимостей"""
+    if config.get("order"):
+        print("\nПорядок загрузки: ")
+        order = get_install_order(graph, config["package"])
+        if order:
+            print ("  " + " -> ".join(order))
+
+def _process_dependencies(config):
+    """Главный обработчик зависимостей"""
     try:
-        if mode == "test":
-            test_data = load_test_graph(config["repo"])
-        elif mode not in ("local", "online"):
-            print(f'Режим "{mode}" пока не реализован')
-            return False
-        graph = build_graph(package, depth, mode, config, test_data)
+        graph = _build_graph_from_config(config)
+
         _print_graph(graph)
 
-        if show_order:
-            print("\nПорядок загрузки (от листьев к корню):")
-            order = get_install_order(graph, package)
-            print(" " + " -> ".join(order))
+        _visualize_graph(config, graph)
+
+        _print_load_order(config, graph)
 
         return True
     except Exception as e:

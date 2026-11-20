@@ -31,8 +31,8 @@ def parse_requirements_file(filepath):
 def _build_pypi_url(package, version):
     """Формирует URL для запроса к PyPI"""
     if not version or version == "latest":
-        return f'https://pypi.tuna.tsinghua.edu.cn/pypi/{package}/json'
-    return f'https://pypi.tuna.tsinghua.edu.cn/pypi/{package}/{version}/json'
+        return f'https://pypi.org/pypi/{package}/json'
+    return f'https://pypi.org/pypi/{package}/{version}/json'
 
 def _download_json(url):
     """Скачивает JSON с сервера и обрабатывает сетевые ошибки"""
